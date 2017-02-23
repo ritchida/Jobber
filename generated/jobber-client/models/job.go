@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
+	"github.com/go-swagger/go-swagger/swag"
 
 	"github.com/go-swagger/go-swagger/errors"
 	"github.com/go-swagger/go-swagger/httpkit/validate"
@@ -19,10 +20,8 @@ swagger:model Job
 type Job struct {
 
 	/* completed at
-
-	Required: true
-	*/
-	CompletedAt strfmt.DateTime `json:"completed_at"`
+	 */
+	CompletedAt *strfmt.DateTime `json:"completed_at,omitempty"`
 
 	/* created at
 
@@ -49,10 +48,8 @@ type Job struct {
 	Status string `json:"status"`
 
 	/* tags
-
-	Required: true
-	*/
-	Tags []Tag `json:"tags"`
+	 */
+	Tags []Tag `json:"tags,omitempty"`
 
 	/* type
 
@@ -70,11 +67,6 @@ type Job struct {
 // Validate validates this job
 func (m *Job) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateCompletedAt(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
 
 	if err := m.validateCreatedAt(formats); err != nil {
 		// prop
@@ -114,15 +106,6 @@ func (m *Job) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Job) validateCompletedAt(formats strfmt.Registry) error {
-
-	if err := validate.Required("completed_at", "body", strfmt.DateTime(m.CompletedAt)); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -186,8 +169,8 @@ func (m *Job) validateStatus(formats strfmt.Registry) error {
 
 func (m *Job) validateTags(formats strfmt.Registry) error {
 
-	if err := validate.Required("tags", "body", m.Tags); err != nil {
-		return err
+	if swag.IsZero(m.Tags) { // not required
+		return nil
 	}
 
 	for i := 0; i < len(m.Tags); i++ {

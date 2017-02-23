@@ -6,7 +6,7 @@ import "github.com/ritchida/jobber/pkg/models"
 type JobberRepository interface {
 	GetJobs() ([]*models.Job, error)
 	GetJob(ID string) (*models.Job, error)
-	InsertJob(job *models.JobSpec) error
+	InsertJob(job *models.JobSpec) (string, error)
 	DeleteJob(ID string) error
 	Close()
 }

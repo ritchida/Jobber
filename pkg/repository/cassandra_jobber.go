@@ -1,6 +1,10 @@
 package repository
 
 import (
+	"fmt"
+	"time"
+
+	"github.com/go-swagger/go-swagger/strfmt"
 	"github.com/gocql/gocql"
 	"github.com/ritchida/jobber/pkg/models"
 )
@@ -39,7 +43,32 @@ func (r CassandraJobberRepository) Close() {
 
 // GetJobs returns all jobs
 func (r CassandraJobberRepository) GetJobs() ([]*models.Job, error) {
-	return nil, nil
+	var time1, time2, time3 time.Time
+	job := models.Job{}
+	jobs := []*models.Job{}
+	// iter := r.session.Query(`SELECT * FROM jobs`).Iter()
+	iter := r.session.Query(`SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs`).Iter()
+	// iter := r.session.Query(`SELECT job_id, status, tags, type, owner FROM jobs`).Iter()
+	for _, colInfo := range iter.Columns() {
+		fmt.Printf("Name %s, type %s\n", colInfo.Name, colInfo.TypeInfo.Type())
+	}
+	for iter.Scan(&job.ID, &time1, &time2, &time3, &job.Status, &job.Tags, &job.Type, &job.Owner) {
+		// for iter.Scan(&job.ID, &job.Status, &job.Tags, &job.Type, &job.Owner) {
+		job.CreatedAt = strfmt.DateTime(time1)
+		job.UpdatedAt = strfmt.DateTime(time2)
+		if &time3 == nil {
+			job.CompletedAt = nil
+		} else {
+			dt := strfmt.DateTime(time3)
+			job.CompletedAt = &dt
+		}
+
+		jobs = append(jobs, &job)
+	}
+	if err := iter.Close(); err != nil {
+		return nil, err
+	}
+	return jobs, nil
 }
 
 // GetJob returns the job specified by ID
@@ -55,4 +84,8 @@ func (r CassandraJobberRepository) InsertJob(job *models.JobSpec) error {
 // DeleteJob removes the specified job from the job repository
 func (r CassandraJobberRepository) DeleteJob(ID string) error {
 	return nil
+}
+
+func ToDateTime(time *time.Time) {
+
 }

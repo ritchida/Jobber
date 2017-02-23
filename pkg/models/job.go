@@ -10,7 +10,7 @@ type Job struct {
 	ID          string
 	CreatedAt   strfmt.DateTime
 	UpdatedAt   strfmt.DateTime
-	CompletedAt strfmt.DateTime
+	CompletedAt *strfmt.DateTime
 	Status      string
 	Type        string
 	Tags        []string

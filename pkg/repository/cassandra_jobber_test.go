@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,6 +22,16 @@ func TestNewJobberRepository(t *testing.T) {
 
 	jobs, err := jobRepo.GetJobs()
 	assert.NoError(err)
+	for _, job := range jobs {
+		fmt.Printf("Job id: %#v\n", job.ID)
+		fmt.Printf("Job created at: %#v\n", job.CreatedAt)
+		fmt.Printf("Job updated at: %#v\n", job.UpdatedAt)
+		fmt.Printf("Job completed at: %#v\n", job.CompletedAt)
+		fmt.Printf("Job status: %#v\n", job.Status)
+		fmt.Printf("Job type: %#v\n", job.Type)
+		fmt.Printf("Job tags: %#v\n", job.Tags)
+		fmt.Printf("Job owner: %#v\n", job.Owner)
+	}
 	assert.Empty(jobs)
 
 	// jobSpec := models.JobSpec{

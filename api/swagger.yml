@@ -73,10 +73,8 @@ definitions:
     - owner
     - created_at
     - updated_at
-    - completed_at
     - type
     - status
-    - tags
     properties:
       id:
         $ref: "#/definitions/ID"

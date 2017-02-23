@@ -1,0 +1,145 @@
+swagger: "2.0"
+info:
+  description: The Jobber service handles web requests for job reporting functionality
+  title: Jobber
+  version: 1.0.0
+consumes:
+- application/json
+- text/plain
+produces:
+- application/json
+- text/plain
+schemes:
+- http
+  #- https
+paths:
+  /v1/jobs:
+    get:
+      tags: ["jobs"]
+      operationId: getJobs
+      responses:
+        '200':
+          description: "list of jobs"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Job"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags: ["job"]
+      operationId: createJob
+      consumes:
+      - application/json
+      parameters:
+      - name: "jobSpec"
+        description: "Creates a new job with the specified job spec"
+        required: true
+        in: body
+        schema:
+          $ref: "#/definitions/JobSpec"
+      responses:
+        '202':
+          description: Accepted
+          schema:
+            $ref: "#/definitions/ID"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"
+  /v1/job/{id}:
+    parameters:
+          - $ref: "#/parameters/IDParam"
+    get:
+     tags: ["job"]
+     description: "Retrieves a job by ID"
+     operationId: getJob
+     responses:
+       '200':
+         description: OK
+         schema:
+           $ref: "#/definitions/Job"
+       default:
+         description: error
+         schema:
+           $ref: "#/definitions/Error"
+definitions:
+  Job:
+    type: object
+    required:
+    - id
+    - owner
+    - created_at
+    - updated_at
+    - completed_at
+    - type
+    - status
+    - tags
+    properties:
+      id:
+        $ref: "#/definitions/ID"
+      owner:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      completed_at:
+        type: string
+        format: date-time
+      type:
+        type: string
+      status:
+        type: string
+        enum:
+        - queued
+        - running
+        - success
+        - failed
+        - unknown
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/Tag"
+          description: Allows jobs to be tagged with user-defined strings for customizable search.
+  JobSpec:
+    type: object
+    required:
+    - type
+    properties:
+      type:
+        type: string
+      tags:
+        type: array
+        items:
+          $ref: "#/definitions/Tag"
+          description: Allows jobs to be tagged with user-defined strings for customizable search.
+  ID:
+    type: string
+    readOnly: true
+    minLength: 1
+  Tag:
+    type: string
+    readOnly: false
+    minLength: 1
+  Error:
+    type: object
+    required:
+    - code
+    - message
+    properties:
+      code:
+        type: integer
+        format: int64
+      message:
+        type: string
+parameters:
+  IDParam:
+    name: id
+    type: string
+    in: path
+    required: true

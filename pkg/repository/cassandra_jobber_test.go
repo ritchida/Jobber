@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ritchida/jobber/pkg/config"
 	"github.com/ritchida/jobber/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +14,10 @@ var jobRepo TestJobberRepository
 
 func TestMain(m *testing.M) {
 	var err error
-	jobRepo, err = NewTestCassandraJobberRepository()
+
+	config := config.ReadConfig()
+
+	jobRepo, err = NewTestCassandraJobberRepository(config.Cassandra)
 	if err != nil {
 		fmt.Printf("Unable to connect to database: %v\n", err)
 		os.Exit(1)

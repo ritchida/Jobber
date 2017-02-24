@@ -2,6 +2,7 @@ package repository
 
 import (
 	"github.com/gocql/gocql"
+	"github.com/ritchida/jobber/pkg/config"
 	"github.com/ritchida/jobber/pkg/models"
 )
 
@@ -18,8 +19,8 @@ type TestCassandraJobberRepository struct {
 }
 
 // NewTestCassandraJobberRepository creates an instance of TestCassandraJobberRepository
-func NewTestCassandraJobberRepository() (TestJobberRepository, error) {
-	repo, err := NewCassandraJobberRepository()
+func NewTestCassandraJobberRepository(config config.CassandraConfig) (TestJobberRepository, error) {
+	repo, err := NewCassandraJobberRepository(config)
 	if err != nil {
 		return nil, err
 	}

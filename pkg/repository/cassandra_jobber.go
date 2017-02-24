@@ -2,11 +2,10 @@ package repository
 
 import (
 	"fmt"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/gocql/gocql"
+	"github.com/ritchida/jobber/pkg/config"
 	"github.com/ritchida/jobber/pkg/models"
 )
 
@@ -26,15 +25,9 @@ type CassandraJobberRepository struct {
 	session *gocql.Session
 }
 
-type CassandraConfig struct {
-	ClusterNodeIPs string
-}
-
 // NewCassandraJobberRepository creates an instance of CassandraJobberRepository
-func NewCassandraJobberRepository() (*CassandraJobberRepository, error) {
+func NewCassandraJobberRepository(config config.CassandraConfig) (*CassandraJobberRepository, error) {
 	repo := CassandraJobberRepository{}
-
-	config := getConfigFromEnvironment()
 
 	// connect to the cluster
 	repo.cluster = gocql.NewCluster(config.ClusterNodeIPs)
@@ -50,20 +43,6 @@ func NewCassandraJobberRepository() (*CassandraJobberRepository, error) {
 	}
 
 	return &repo, nil
-}
-
-func getConfigFromEnvironment() CassandraConfig {
-	config := CassandraConfig{}
-	envVars := os.Environ()
-	for _, envVar := range envVars {
-		parts := strings.Split(envVar, "=")
-		switch parts[0] {
-		case "CASSANDRA_CLUSTER_IPS":
-			config.ClusterNodeIPs = parts[1]
-		default:
-		}
-	}
-	return config
 }
 
 // Close closes the underlying connection to the database

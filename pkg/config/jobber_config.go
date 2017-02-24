@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
@@ -24,13 +25,19 @@ type CassandraConfig struct {
 	ClusterNodeIPs string
 }
 
-// ReadConfig reads in the jobber service configuration
-func ReadConfig() (JobberConfig, []error) {
-	return getJobberEnvConfig()
+var jobberConfig JobberConfig
+var jobberConfigOnce sync.Once
+var configErrors []error
+
+// GetJobberConfig reads in the jobber service configuration once,
+// and returns a slice of configuration errors encountered
+func GetJobberConfig() (JobberConfig, []error) {
+	jobberConfigOnce.Do(loadConfig)
+	return jobberConfig, configErrors
 }
 
-func getJobberEnvConfig() (JobberConfig, []error) {
-	errors := []error{}
+func loadConfig() {
+	configErrors := []error{}
 	config := JobberConfig{
 		Host:      jobberHost,
 		Port:      jobberPort,
@@ -45,14 +52,14 @@ func getJobberEnvConfig() (JobberConfig, []error) {
 		case "JOBBER_PORT":
 			value, err := strconv.ParseInt(parts[1], 10, 32)
 			if err != nil {
-				errors = append(errors, err)
+				configErrors = append(configErrors, err)
 			} else {
 				config.Port = int32(value)
 			}
 		default:
 		}
 	}
-	return config, errors
+	jobberConfig = config
 }
 
 func getCassandraEnvConfig() CassandraConfig {

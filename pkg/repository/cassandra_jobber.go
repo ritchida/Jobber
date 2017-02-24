@@ -2,6 +2,8 @@ package repository
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -24,13 +26,18 @@ type CassandraJobberRepository struct {
 	session *gocql.Session
 }
 
+type CassandraConfig struct {
+	ClusterNodeIPs string
+}
+
 // NewCassandraJobberRepository creates an instance of CassandraJobberRepository
 func NewCassandraJobberRepository() (*CassandraJobberRepository, error) {
 	repo := CassandraJobberRepository{}
 
+	config := getConfigFromEnvironment()
+
 	// connect to the cluster
-	// TODO: get this from config
-	repo.cluster = gocql.NewCluster("35.166.53.200")
+	repo.cluster = gocql.NewCluster(config.ClusterNodeIPs)
 	repo.cluster.Keyspace = "jobber"
 	repo.cluster.Consistency = gocql.Quorum
 
@@ -43,6 +50,20 @@ func NewCassandraJobberRepository() (*CassandraJobberRepository, error) {
 	}
 
 	return &repo, nil
+}
+
+func getConfigFromEnvironment() CassandraConfig {
+	config := CassandraConfig{}
+	envVars := os.Environ()
+	for _, envVar := range envVars {
+		parts := strings.Split(envVar, "=")
+		switch parts[0] {
+		case "CASSANDRA_CLUSTER_IPS":
+			config.ClusterNodeIPs = parts[1]
+		default:
+		}
+	}
+	return config
 }
 
 // Close closes the underlying connection to the database

@@ -6,7 +6,6 @@ import (
 
 	errors "github.com/go-swagger/go-swagger/errors"
 	httpkit "github.com/go-swagger/go-swagger/httpkit"
-	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 
 	"github.com/ritchida/Jobber/cmd/jobber/handler"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations"
@@ -33,10 +32,9 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 
 	api.TxtProducer = httpkit.TextProducer()
 
+	// Add handlers here
 	api.JobCreateJobHandler = job.CreateJobHandlerFunc(handler.CreateJob)
-	api.JobGetJobHandler = job.GetJobHandlerFunc(func(params job.GetJobParams) middleware.Responder {
-		return middleware.NotImplemented("operation job.GetJob has not yet been implemented")
-	})
+	api.JobGetJobHandler = job.GetJobHandlerFunc(handler.GetJob)
 	api.JobsGetJobsHandler = jobs.GetJobsHandlerFunc(handler.GetJobs)
 
 	api.ServerShutdown = func() {}

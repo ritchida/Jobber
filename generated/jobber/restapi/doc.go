@@ -16,9 +16,9 @@ The Jobber service handles web requests for job reporting functionality
 
 
     Produces:
-    - application/json
-
     - text/plain
+
+    - application/json
 
 
 swagger:meta

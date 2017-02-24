@@ -49,7 +49,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/Error"
-  /v1/job/{id}:
+  /v1/jobs/{id}:
     parameters:
           - $ref: "#/parameters/IDParam"
     get:

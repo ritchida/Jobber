@@ -33,9 +33,7 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 
 	api.TxtProducer = httpkit.TextProducer()
 
-	api.JobCreateJobHandler = job.CreateJobHandlerFunc(func(params job.CreateJobParams) middleware.Responder {
-		return middleware.NotImplemented("operation job.CreateJob has not yet been implemented")
-	})
+	api.JobCreateJobHandler = job.CreateJobHandlerFunc(handler.CreateJob)
 	api.JobGetJobHandler = job.GetJobHandlerFunc(func(params job.GetJobParams) middleware.Responder {
 		return middleware.NotImplemented("operation job.GetJob has not yet been implemented")
 	})

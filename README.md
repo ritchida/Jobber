@@ -1,5 +1,20 @@
 # Jobber
 
-Notes on Cassandra:
-Needed to set listen_address, rpc_address, brodcast_address, and seeds in /etc/cassandra/cassandra.yaml
-to private IP of Cassandra host, and expose port 9042 on the host in order to connect
+Jobber is a Cassandra-backed job reporting service.
+
+## Running tests
+
+On a clean machine you must first generate the API and related objects:
+```bash
+make generate
+```
+To run the tests you must have an instance of Cassandra running and publicly-accessible.
+Once you have an instance/cluster running, set the CASSANDRA_CLUSTER_IPS environment variable:
+```bash
+export CASSANDRA_CLUSTER_IPS=<ip of cassandra node>
+```
+Then you can run the Cassandra integration tests:
+```bash
+go test github.com/ritchida/jobber/pkg/repository
+```
+

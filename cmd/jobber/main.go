@@ -29,10 +29,11 @@ func main() {
 	parser.LongDescription = swaggerSpec.Spec().Info.Description
 
 	api := operations.NewJobberAPI(swaggerSpec)
-	config, configErrors := config.ReadConfig()
+	config, configErrors := config.GetJobberConfig()
 	for _, configErr := range configErrors {
 		fmt.Printf("Configuration error: %v\n", configErr)
 	}
+
 	server := restapi.NewServer(api, config)
 	defer server.Shutdown()
 

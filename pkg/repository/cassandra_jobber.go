@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -18,6 +19,10 @@ const (
 	deleteLatestJobQuery = "DELETE FROM latest_jobs where bucket = ? and job_id = ?"
 )
 
+var repository *CassandraJobberRepository
+var repoInitOnce sync.Once
+var repoInitErr error
+
 // CassandraJobberRepository is an application of the repository pattern for jobs
 type CassandraJobberRepository struct {
 	JobberRepository
@@ -25,24 +30,33 @@ type CassandraJobberRepository struct {
 	session *gocql.Session
 }
 
-// NewCassandraJobberRepository creates an instance of CassandraJobberRepository
-func NewCassandraJobberRepository(config config.CassandraConfig) (*CassandraJobberRepository, error) {
+// GetCassandraJobberRepository creates an instance of CassandraJobberRepository
+func GetCassandraJobberRepository() (*CassandraJobberRepository, error) {
+	repoInitOnce.Do(initRepo)
+	return repository, repoInitErr
+}
+
+func initRepo() {
 	repo := CassandraJobberRepository{}
 
+	var configErrors []error
+	jobberConfig, configErrors := config.GetJobberConfig()
+	if len(configErrors) > 0 {
+		for _, err := range configErrors {
+			fmt.Printf("Configuration error: %v\n", err)
+		}
+		return
+	}
+
 	// connect to the cluster
-	repo.cluster = gocql.NewCluster(config.ClusterNodeIPs)
+	repo.cluster = gocql.NewCluster(jobberConfig.Cassandra.ClusterNodeIPs)
 	repo.cluster.Keyspace = "jobber"
 	repo.cluster.Consistency = gocql.Quorum
 
 	// connect to the database
-	var err error
-	repo.session, err = repo.cluster.CreateSession()
-	if err != nil {
-		fmt.Printf("Unable to create session: %v\n", err)
-		return nil, err
-	}
+	repo.session, repoInitErr = repo.cluster.CreateSession()
 
-	return &repo, nil
+	repository = &repo
 }
 
 // Close closes the underlying connection to the database

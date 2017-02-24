@@ -10,11 +10,11 @@ import (
 	graceful "github.com/tylerb/graceful"
 
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations"
-	config "github.com/ritchida/jobber/pkg/config"
+	jobberconfig "github.com/ritchida/jobber/pkg/config"
 )
 
 // NewServer creates a new api jobber server but does not configure it
-func NewServer(api *operations.JobberAPI, config config.JobberConfig) *Server {
+func NewServer(api *operations.JobberAPI, config jobberconfig.JobberConfig) *Server {
 	// s := new(Server)
 	s := Server{
 		api:  api,

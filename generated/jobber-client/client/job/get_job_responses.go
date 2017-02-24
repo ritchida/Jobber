@@ -54,7 +54,7 @@ type GetJobOK struct {
 }
 
 func (o *GetJobOK) Error() string {
-	return fmt.Sprintf("[GET /v1/job/{id}][%d] getJobOK  %+v", 200, o.Payload)
+	return fmt.Sprintf("[GET /v1/jobs/{id}][%d] getJobOK  %+v", 200, o.Payload)
 }
 
 func (o *GetJobOK) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {
@@ -92,7 +92,7 @@ func (o *GetJobDefault) Code() int {
 }
 
 func (o *GetJobDefault) Error() string {
-	return fmt.Sprintf("[GET /v1/job/{id}][%d] getJob default  %+v", o._statusCode, o.Payload)
+	return fmt.Sprintf("[GET /v1/jobs/{id}][%d] getJob default  %+v", o._statusCode, o.Payload)
 }
 
 func (o *GetJobDefault) readResponse(response client.Response, consumer httpkit.Consumer, formats strfmt.Registry) error {

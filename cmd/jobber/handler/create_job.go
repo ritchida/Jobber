@@ -19,7 +19,7 @@ func CreateJob(params job.CreateJobParams) middleware.Responder {
 
 	jobRepo, err := repository.GetCassandraJobberRepository()
 	if err != nil {
-		newErr := fmt.Errorf("Unable to connect to database: %v", err)
+		newErr := fmt.Errorf("Unable to access jobs repository: %v", err)
 		se := apimodel.Error{
 			Code:    http.StatusInternalServerError,
 			Message: fmt.Sprintf("%v", newErr),
@@ -31,7 +31,7 @@ func CreateJob(params job.CreateJobParams) middleware.Responder {
 	internalJobSpec.FromAPI(*params.JobSpec)
 	id, err := jobRepo.InsertJob(&internalJobSpec)
 	if err != nil {
-		newErr := fmt.Errorf("Unable to connect to database: %v", err)
+		newErr := fmt.Errorf("Unable to create job: %v", err)
 		se := apimodel.Error{
 			Code:    http.StatusInternalServerError,
 			Message: fmt.Sprintf("%v", newErr),

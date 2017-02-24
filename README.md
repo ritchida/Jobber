@@ -29,3 +29,16 @@ Then you can run the Cassandra integration tests:
 go test github.com/ritchida/jobber/pkg/repository
 ```
 
+To add APIs to the Jobber service, execute the following steps:
+
+* Add any database tables necessary following the conceptual, logical, physical data modelling guidelines for Cassandra
+* Modify the the repository in pkg repository jobber_repository.go and pkg/repository/cassandra_jobber.go as necessary to support querying Cassandra
+* Add integration tests to pkg/repository/cassandra_jobber_test.go
+* Modify the api/swagger.yml file as necessary to support your new API(s)
+* make clean
+* make generate
+* Add an internal representation of your generated API objects in pkg/models, and a mapping between the API and the internal representation
+* Add a handler to cmd/jobber/handler to invoke the repository and return data/error to the API as appropriate
+* Initialize the service with your handler in cmd/jobber/restapi/configure_jobber.go
+* Start the jobber service
+* Test your new API!

@@ -8,6 +8,7 @@ import (
 	httpkit "github.com/go-swagger/go-swagger/httpkit"
 	middleware "github.com/go-swagger/go-swagger/httpkit/middleware"
 
+	"github.com/ritchida/Jobber/cmd/jobber/handler"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations/job"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations/jobs"
@@ -38,9 +39,7 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 	api.JobGetJobHandler = job.GetJobHandlerFunc(func(params job.GetJobParams) middleware.Responder {
 		return middleware.NotImplemented("operation job.GetJob has not yet been implemented")
 	})
-	api.JobsGetJobsHandler = jobs.GetJobsHandlerFunc(func(params jobs.GetJobsParams) middleware.Responder {
-		return middleware.NotImplemented("operation jobs.GetJobs has not yet been implemented")
-	})
+	api.JobsGetJobsHandler = jobs.GetJobsHandlerFunc(handler.GetJobs)
 
 	api.ServerShutdown = func() {}
 

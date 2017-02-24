@@ -11,6 +11,7 @@ import (
 	swaggerapi "github.com/ritchida/jobber/generated/jobber/restapi"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations"
 	"github.com/ritchida/jobber/pkg/config"
+	"github.com/ritchida/jobber/pkg/repository"
 )
 
 var options struct {
@@ -29,12 +30,14 @@ func main() {
 	parser.LongDescription = swaggerSpec.Spec().Info.Description
 
 	api := operations.NewJobberAPI(swaggerSpec)
-	config, configErrors := config.GetJobberConfig()
-	for _, configErr := range configErrors {
-		fmt.Printf("Configuration error: %v\n", configErr)
+
+	config, err := initializeServiceConfig()
+	if err != nil {
+		fmt.Printf("Unable to start service: %v\n", err)
+		os.Exit(1)
 	}
 
-	server := restapi.NewServer(api, config)
+	server := restapi.NewServer(api, *config)
 	defer server.Shutdown()
 
 	for _, optsGroup := range api.CommandLineOptionsGroups {
@@ -50,4 +53,23 @@ func main() {
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func initializeServiceConfig() (*config.JobberConfig, error) {
+	// load the configuration
+	config, configErrors := config.GetJobberConfig()
+	if len(configErrors) > 0 {
+		for _, configErr := range configErrors {
+			fmt.Printf("Configuration error: %v\n", configErr)
+		}
+		return nil, fmt.Errorf("Unable to initialize service from configuration")
+	}
+
+	// initialize the repository session
+	_, err := repository.GetCassandraJobberRepository()
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
 }

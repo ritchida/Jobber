@@ -6,12 +6,12 @@ import (
 
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 	apimodel "github.com/ritchida/jobber/generated/jobber/models"
-	"github.com/ritchida/jobber/generated/jobber/restapi/operations/jobs"
+	"github.com/ritchida/jobber/generated/jobber/restapi/operations/job"
 	"github.com/ritchida/jobber/pkg/repository"
 )
 
-// GetJobs will get a list of compute ids and profiles from rpmgr client
-func GetJobs(params jobs.GetJobsParams) middleware.Responder {
+// GetJob returns a response with a Job payload where the Job ID is "params.ID".
+func GetJob(params job.GetJobParams) middleware.Responder {
 	jobRepo, err := repository.GetCassandraJobberRepository()
 	if err != nil {
 		newErr := fmt.Errorf("Unable to access jobs repository: %v", err)
@@ -19,24 +19,20 @@ func GetJobs(params jobs.GetJobsParams) middleware.Responder {
 			Code:    http.StatusInternalServerError,
 			Message: fmt.Sprintf("%v", newErr),
 		}
-		return jobs.NewGetJobsDefault(0).WithPayload(&se)
+		return job.NewGetJobDefault(0).WithPayload(&se)
 	}
 
-	list, err := jobRepo.GetJobs()
+	j, err := jobRepo.GetJob(params.ID)
 	if err != nil {
-		newErr := fmt.Errorf("Unable to get jobs: %v", err)
+		newErr := fmt.Errorf("Unable to get job: %v", err)
 		se := apimodel.Error{
 			Code:    http.StatusInternalServerError,
 			Message: fmt.Sprintf("%v", newErr),
 		}
-		return jobs.NewGetJobsDefault(0).WithPayload(&se)
+		return job.NewGetJobDefault(0).WithPayload(&se)
 	}
 
-	apiJobs := []*apimodel.Job{}
-	for _, job := range list {
-		apiJob := job.ToAPI()
-		apiJobs = append(apiJobs, &apiJob)
-	}
+	apiJob := j.ToAPI()
 
-	return jobs.NewGetJobsOK().WithPayload(apiJobs)
+	return job.NewGetJobOK().WithPayload(&apiJob)
 }

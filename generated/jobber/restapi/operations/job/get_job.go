@@ -27,7 +27,7 @@ func NewGetJob(ctx *middleware.Context, handler GetJobHandler) *GetJob {
 	return &GetJob{Context: ctx, Handler: handler}
 }
 
-/*GetJob swagger:route GET /v1/job/{id} job getJob
+/*GetJob swagger:route GET /v1/jobs/{id} job getJob
 
 Retrieves a job by ID
 

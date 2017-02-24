@@ -59,7 +59,7 @@ func (a *Client) GetJob(params *GetJobParams) (*GetJobOK, error) {
 	result, err := a.transport.Submit(&client.Operation{
 		ID:                 "getJob",
 		Method:             "GET",
-		PathPattern:        "/v1/job/{id}",
+		PathPattern:        "/v1/jobs/{id}",
 		ProducesMediaTypes: []string{"application/json", "text/plain"},
 		ConsumesMediaTypes: []string{"application/json", "text/plain"},
 		Schemes:            []string{"http"},

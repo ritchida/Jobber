@@ -10,9 +10,9 @@ The Jobber service handles web requests for job reporting functionality
     Version: 1.0.0
 
     Consumes:
-    - text/plain
-
     - application/json
+
+    - text/plain
 
 
     Produces:

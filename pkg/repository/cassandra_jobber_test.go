@@ -80,6 +80,20 @@ func TestJobLifecycle(t *testing.T) {
 		updatedJobs = append(updatedJobs, jobByID)
 	}
 
+	for idx, j := range updatedJobs {
+		for x := 0; x <= idx; x++ {
+			jobRepo.AddJobMessage(j.ID, fmt.Sprintf("message-%d", x))
+		}
+		jobByID, err := jobRepo.GetJob(j.ID)
+		assert.NoError(err)
+		assert.NotEqual(j.UpdatedAt, jobByID.UpdatedAt)
+		jobMsgs, err := jobRepo.GetJobMessages(j.ID)
+		assert.NoError(err)
+		for x := 0; x <= idx; x++ {
+			assert.Equal(jobMsgs[x].Message, fmt.Sprintf("message-%d", x))
+		}
+	}
+
 	// complete all 3 jobs and verify status and completion time
 	completedJobs := []*models.Job{}
 	for _, j := range updatedJobs {

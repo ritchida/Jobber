@@ -101,6 +101,42 @@ paths:
          description: error
          schema:
            $ref: "#/definitions/Error"
+  /v1/jobs/{id}/messages:
+    parameters:
+          - $ref: "#/parameters/IDParam"
+    get:
+      tags: ["job"]
+      operationId: getJobMessages
+      responses:
+        '200':
+          description: "list of job messagess"
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/JobMessage"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags: ["job"]
+      operationId: addJobMessage
+      consumes:
+      - application/json
+      parameters:
+      - name: "message"
+        description: "Creates a new job message"
+        required: true
+        in: body
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Accepted
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/Error"
 definitions:
   Job:
     type: object
@@ -154,6 +190,17 @@ definitions:
         items:
           $ref: "#/definitions/Tag"
           description: Allows jobs to be tagged with user-defined strings for customizable search.
+  JobMessage:
+    type: object
+    required:
+    - message
+    - created_at
+    properties:
+      message:
+        type: string
+      created_at:
+        type: string
+        format: date-time
   ID:
     type: string
     readOnly: true

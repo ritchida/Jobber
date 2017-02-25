@@ -25,3 +25,11 @@ create table latest_jobs
     owner text,
     primary key ((bucket), job_id)
 ) with clustering order by (job_id desc);
+
+create table job_messages_by_job_id
+(
+    job_id timeuuid,
+    message_created timestamp,
+    message text,
+    primary key ((job_id), message_created)
+);

@@ -48,6 +48,31 @@ func (a *Client) CreateJob(params *CreateJobParams) (*CreateJobAccepted, error) 
 }
 
 /*
+DeleteJob Deletes a job specified by ID
+*/
+func (a *Client) DeleteJob(params *DeleteJobParams) (*DeleteJobOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewDeleteJobParams()
+	}
+
+	result, err := a.transport.Submit(&client.Operation{
+		ID:                 "deleteJob",
+		Method:             "DELETE",
+		PathPattern:        "/v1/jobs/{id}",
+		ProducesMediaTypes: []string{"application/json", "text/plain"},
+		ConsumesMediaTypes: []string{"application/json", "text/plain"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &DeleteJobReader{formats: a.formats},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*DeleteJobOK), nil
+}
+
+/*
 GetJob Retrieves a job by ID
 */
 func (a *Client) GetJob(params *GetJobParams) (*GetJobOK, error) {

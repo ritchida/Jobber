@@ -9,8 +9,9 @@ import (
 	"github.com/ritchida/jobber/pkg/repository"
 )
 
-// GetJob returns a response with a Job payload where the Job ID is "params.ID".
-func GetJob(params job.GetJobParams) middleware.Responder {
+// DeleteJob deletes a Job with the specified ID.
+func DeleteJob(params job.DeleteJobParams) middleware.Responder {
+	fmt.Printf("Delete job handler, ID: %s\n", params.ID)
 	jobRepo, err := repository.GetCassandraJobberRepository()
 	if err != nil {
 		newErr := fmt.Errorf("Unable to access jobs repository: %v", err)
@@ -18,19 +19,14 @@ func GetJob(params job.GetJobParams) middleware.Responder {
 		return job.NewGetJobDefault(0).WithPayload(&se)
 	}
 
-	j, err := jobRepo.GetJob(params.ID)
+	fmt.Printf("Deleting job %s from repository\n", params.ID)
+	err = jobRepo.DeleteJob(params.ID)
 	if err != nil {
-		newErr := fmt.Errorf("Unable to get job: %v", err)
+		newErr := fmt.Errorf("Unable to delete job: %v", err)
 		se := createServiceError(newErr, http.StatusInternalServerError)
-		return job.NewGetJobDefault(0).WithPayload(&se)
+		return job.NewDeleteJobDefault(0).WithPayload(&se)
 	}
 
-	if j == nil {
-		newErr := fmt.Errorf("Unable to locate job: %s", params.ID)
-		se := createServiceError(newErr, http.StatusNotFound)
-		return job.NewGetJobDefault(0).WithPayload(&se)
-	}
-
-	apiJob := j.ToAPI()
-	return job.NewGetJobOK().WithPayload(&apiJob)
+	fmt.Printf("Deleted job %s from repository, returning\n", params.ID)
+	return job.NewGetJobOK()
 }

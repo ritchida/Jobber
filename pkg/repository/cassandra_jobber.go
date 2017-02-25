@@ -18,6 +18,8 @@ const (
 	insertLatestJobQuery       = "INSERT INTO latest_jobs (bucket, job_id, created, last_updated, status, tags, type, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 	updateJobStatusQuery       = "UPDATE        jobs SET status = ?, last_updated = ? where                job_id = ?"
 	updateLatestJobStatusQuery = "UPDATE latest_jobs SET status = ?, last_updated = ? where bucket = ? and job_id = ?"
+	completeJobQuery           = "UPDATE        jobs SET status = ?, last_updated = ?, completed = ? where                job_id = ?"
+	completeLatestJobQuery     = "UPDATE latest_jobs SET status = ?, last_updated = ?, completed = ? where bucket = ? and job_id = ?"
 	deleteJobQuery             = "DELETE FROM jobs        where                job_id = ?"
 	deleteLatestJobQuery       = "DELETE FROM latest_jobs where bucket = ? and job_id = ?"
 )
@@ -74,11 +76,12 @@ func (r CassandraJobberRepository) GetLatestJobs(numJobs int) ([]*models.Job, er
 	jobs := []*models.Job{}
 	iter := r.session.Query(selectLatestJobsQuery, 0, numJobs).Iter()
 	for iter.Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &completedAt, &job.Status, &job.Tags, &job.Type, &job.Owner) {
+		completedAtValue := completedAt
 		newJob := models.Job{
 			ID:          job.ID,
 			CreatedAt:   job.CreatedAt,
 			UpdatedAt:   job.UpdatedAt,
-			CompletedAt: &completedAt,
+			CompletedAt: &completedAtValue,
 			Status:      job.Status,
 			Type:        job.Type,
 			Tags:        job.Tags,
@@ -99,11 +102,12 @@ func (r CassandraJobberRepository) GetJobs() ([]*models.Job, error) {
 	jobs := []*models.Job{}
 	iter := r.session.Query(selectJobsQuery).Iter()
 	for iter.Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &completedAt, &job.Status, &job.Tags, &job.Type, &job.Owner) {
+		completedAtValue := completedAt
 		newJob := models.Job{
 			ID:          job.ID,
 			CreatedAt:   job.CreatedAt,
 			UpdatedAt:   job.UpdatedAt,
-			CompletedAt: &completedAt,
+			CompletedAt: &completedAtValue,
 			Status:      job.Status,
 			Type:        job.Type,
 			Tags:        job.Tags,
@@ -124,11 +128,12 @@ func (r CassandraJobberRepository) GetJob(ID string) (*models.Job, error) {
 	var newJob *models.Job
 	iter := r.session.Query(selectJobByIDQuery, ID).Iter()
 	for iter.Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &completedAt, &job.Status, &job.Tags, &job.Type, &job.Owner) {
+		completedAtValue := completedAt
 		newJob = &models.Job{
 			ID:          job.ID,
 			CreatedAt:   job.CreatedAt,
 			UpdatedAt:   job.UpdatedAt,
-			CompletedAt: &completedAt,
+			CompletedAt: &completedAtValue,
 			Status:      job.Status,
 			Type:        job.Type,
 			Tags:        job.Tags,
@@ -161,6 +166,18 @@ func (r CassandraJobberRepository) UpdateJobStatus(ID string, status string) err
 	time := timeUUID.Time()
 	batch.Query(updateJobStatusQuery, status, time, ID)
 	batch.Query(updateLatestJobStatusQuery, status, time, 0, ID)
+
+	return r.session.ExecuteBatch(batch)
+}
+
+// CompleteJob updates the specified job's status
+func (r CassandraJobberRepository) CompleteJob(ID string, status string) error {
+	batch := gocql.NewBatch(gocql.LoggedBatch)
+
+	timeUUID := gocql.TimeUUID()
+	time := timeUUID.Time()
+	batch.Query(completeJobQuery, status, time, time, ID)
+	batch.Query(completeLatestJobQuery, status, time, time, 0, ID)
 
 	return r.session.ExecuteBatch(batch)
 }

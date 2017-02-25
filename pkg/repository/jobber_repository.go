@@ -8,7 +8,8 @@ type JobberRepository interface {
 	GetJobs() ([]*models.Job, error)
 	GetJob(ID string) (*models.Job, error)
 	InsertJob(job *models.JobSpec) (string, error)
-	UpdateJobStatus(ID string, status string) (*models.Job, error)
+	UpdateJobStatus(ID string, status string) error
+	CompleteJob(ID string, status string) error
 	DeleteJob(ID string) error
 	Close()
 }

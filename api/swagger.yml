@@ -126,9 +126,9 @@ definitions:
   JobStatus:
     type: string
     enum:
-    - queued
+    - created
     - running
-    - success
+    - succeeded
     - failed
     - unknown
   JobSpec:

@@ -24,7 +24,7 @@ var jobStatusEnum []interface{}
 func (m JobStatus) validateJobStatusEnum(path, location string, value JobStatus) error {
 	if jobStatusEnum == nil {
 		var res []JobStatus
-		if err := json.Unmarshal([]byte(`["queued","running","success","failed","unknown"]`), &res); err != nil {
+		if err := json.Unmarshal([]byte(`["created","running","succeeded","failed","unknown"]`), &res); err != nil {
 			return err
 		}
 		for _, v := range res {

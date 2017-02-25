@@ -69,7 +69,7 @@ func TestJobLifecycle(t *testing.T) {
 		insertedJobs = append(insertedJobs, jobByID)
 	}
 
-	// update the status on all 3 jobs
+	// update the status on all 3 jobs, and verify status and updated time
 	updatedJobs := []*models.Job{}
 	for _, j := range insertedJobs {
 		jobRepo.UpdateJobStatus(j.ID, "running")
@@ -80,13 +80,25 @@ func TestJobLifecycle(t *testing.T) {
 		updatedJobs = append(updatedJobs, jobByID)
 	}
 
+	// complete all 3 jobs and verify status and completion time
+	completedJobs := []*models.Job{}
+	for _, j := range updatedJobs {
+		jobRepo.CompleteJob(j.ID, "completed")
+		jobByID, err := jobRepo.GetJob(j.ID)
+		assert.NoError(err)
+		assert.Equal("completed", jobByID.Status)
+		assert.NotEqual(j.UpdatedAt, jobByID.UpdatedAt)
+		assert.NotEqual(j.CompletedAt, jobByID.CompletedAt)
+		completedJobs = append(completedJobs, jobByID)
+	}
+
 	// make sure we can get the latest jobs correctly
 	latestJobs, err := jobRepo.GetLatestJobs(2)
 	assert.NoError(err)
 	assert.NotEmpty(latestJobs)
 	assert.Equal(2, len(latestJobs))
-	assertEqualJobs(t, updatedJobs[2], latestJobs[0])
-	assertEqualJobs(t, updatedJobs[1], latestJobs[1])
+	assertEqualJobs(t, completedJobs[2], latestJobs[0])
+	assertEqualJobs(t, completedJobs[1], latestJobs[1])
 
 	// delete the jobs we ceated, and make sure we can no longer query them by ID
 	for _, job := range insertedJobs {
@@ -103,10 +115,10 @@ func assertEqualJobs(t *testing.T, expectedJob *models.Job, actualJob *models.Jo
 	assert.Equal(expectedJob.ID, actualJob.ID)
 	assert.Equal(expectedJob.CreatedAt, actualJob.CreatedAt)
 	assert.Equal(expectedJob.UpdatedAt, actualJob.UpdatedAt)
-	assert.Equal(expectedJob.UpdatedAt, actualJob.UpdatedAt)
 	assert.Equal(expectedJob.CompletedAt, actualJob.CompletedAt)
 	assert.Equal(expectedJob.Status, actualJob.Status)
 	assert.Equal(expectedJob.Type, actualJob.Type)
+	assert.Equal(expectedJob.Tags, actualJob.Tags)
 	assert.Equal(expectedJob.Owner, actualJob.Owner)
 }
 

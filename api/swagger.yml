@@ -17,6 +17,12 @@ paths:
     get:
       tags: ["jobs"]
       operationId: getJobs
+      parameters:
+      - name: "numLatest"
+        description: "Determines the number of the most-recenly created jobs to query"
+        required: false
+        in: query
+        type: integer
       responses:
         '200':
           description: "list of jobs"

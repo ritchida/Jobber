@@ -7,7 +7,7 @@ import (
 	errors "github.com/go-swagger/go-swagger/errors"
 	httpkit "github.com/go-swagger/go-swagger/httpkit"
 
-	"github.com/ritchida/Jobber/cmd/jobber/handler"
+	"github.com/ritchida/jobber/cmd/jobber/handler"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations/job"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations/jobs"

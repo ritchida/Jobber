@@ -7,7 +7,11 @@ import (
 	"net/http"
 
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/httpkit"
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
+	"github.com/go-swagger/go-swagger/swag"
+
+	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
 
 // NewGetJobsParams creates a new GetJobsParams object
@@ -25,6 +29,11 @@ type GetJobsParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request
+
+	/*Determines the number of the most-recenly created jobs to query
+	  In: query
+	*/
+	NumLatest *int64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -33,8 +42,33 @@ func (o *GetJobsParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 	var res []error
 	o.HTTPRequest = r
 
+	qs := httpkit.Values(r.URL.Query())
+
+	qNumLatest, qhkNumLatest, _ := qs.GetOK("numLatest")
+	if err := o.bindNumLatest(qNumLatest, qhkNumLatest, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *GetJobsParams) bindNumLatest(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	value, err := swag.ConvertInt64(raw)
+	if err != nil {
+		return errors.InvalidType("numLatest", "query", "int64", raw)
+	}
+	o.NumLatest = &value
+
 	return nil
 }

@@ -6,6 +6,7 @@ package jobs
 import (
 	"github.com/go-swagger/go-swagger/client"
 	"github.com/go-swagger/go-swagger/errors"
+	"github.com/go-swagger/go-swagger/swag"
 
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 )
@@ -13,7 +14,7 @@ import (
 // NewGetJobsParams creates a new GetJobsParams object
 // with the default values initialized.
 func NewGetJobsParams() *GetJobsParams {
-
+	var ()
 	return &GetJobsParams{}
 }
 
@@ -21,12 +22,40 @@ func NewGetJobsParams() *GetJobsParams {
 for the get jobs operation typically these are written to a http.Request
 */
 type GetJobsParams struct {
+
+	/*NumLatest
+	  Determines the number of the most-recenly created jobs to query
+
+	*/
+	NumLatest *int64
+}
+
+// WithNumLatest adds the numLatest to the get jobs params
+func (o *GetJobsParams) WithNumLatest(numLatest *int64) *GetJobsParams {
+	o.NumLatest = numLatest
+	return o
 }
 
 // WriteToRequest writes these params to a swagger request
 func (o *GetJobsParams) WriteToRequest(r client.Request, reg strfmt.Registry) error {
 
 	var res []error
+
+	if o.NumLatest != nil {
+
+		// query param numLatest
+		var qrNumLatest int64
+		if o.NumLatest != nil {
+			qrNumLatest = *o.NumLatest
+		}
+		qNumLatest := swag.FormatInt64(qrNumLatest)
+		if qNumLatest != "" {
+			if err := r.SetQueryParam("numLatest", qNumLatest); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)

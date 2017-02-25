@@ -9,11 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var jobRepo TestJobberRepository
+// var jobRepo TestJobberRepository
+var jobRepo *CassandraJobberRepository
 
 func TestMain(m *testing.M) {
 	var err error
-	jobRepo, err = GetTestCassandraJobberRepository()
+	jobRepo, err = GetCassandraJobberRepository()
 	if err != nil {
 		fmt.Printf("Unable to connect to database: %v\n", err)
 		os.Exit(1)
@@ -41,39 +42,62 @@ func TestJobLifecycle(t *testing.T) {
 		Type: "integration test",
 	}
 
-	jobID, err = jobRepo.InsertJob(&jobSpec)
-	assert.NoError(err)
-	assert.NotNil(jobID)
+	insertedJobs := []*models.Job{}
 
-	jobs, err = jobRepo.GetJobs()
-	assert.NoError(err)
-	assert.NotEmpty(jobs)
+	// insert 3 jobs, and make sure we can query each by its ID
+	for count := 0; count < 3; count++ {
+		jobID, err = jobRepo.InsertJob(&jobSpec)
+		assert.NoError(err)
+		assert.NotNil(jobID)
 
-	var job *models.Job
-	for _, j := range jobs {
-		if j.ID == jobID {
-			job = j
-			break
+		jobs, err = jobRepo.GetJobs()
+		assert.NoError(err)
+		assert.NotEmpty(jobs)
+
+		var job *models.Job
+		for _, j := range jobs {
+			if j.ID == jobID {
+				job = j
+				break
+			}
 		}
+
+		jobByID, err := jobRepo.GetJob(jobID)
+		assert.NoError(err)
+		assert.NotNil(jobByID)
+		assertEqualJobs(t, job, jobByID)
+
+		insertedJobs = append(insertedJobs, jobByID)
 	}
 
-	jobByID, err := jobRepo.GetJob(jobID)
+	// make sure we can get the latest jobs correctly
+	latestJobs, err := jobRepo.GetLatestJobs(2)
 	assert.NoError(err)
-	assert.NotNil(jobByID)
-	assert.Equal(job.ID, jobByID.ID)
-	assert.Equal(job.CreatedAt, jobByID.CreatedAt)
-	assert.Equal(job.UpdatedAt, jobByID.UpdatedAt)
-	assert.Equal(job.UpdatedAt, jobByID.UpdatedAt)
-	assert.Equal(job.CompletedAt, jobByID.CompletedAt)
-	assert.Equal(job.Status, jobByID.Status)
-	assert.Equal(job.Type, jobByID.Type)
-	assert.Equal(job.Owner, jobByID.Owner)
+	assert.NotEmpty(latestJobs)
+	assert.Equal(2, len(latestJobs))
+	assertEqualJobs(t, insertedJobs[2], latestJobs[0])
+	assertEqualJobs(t, insertedJobs[1], latestJobs[1])
 
-	err = jobRepo.DeleteJob(job.ID)
-	assert.NoError(err)
-	jobByID, err = jobRepo.GetJob(job.ID)
-	assert.NoError(err)
-	assert.Nil(jobByID)
+	// delete the jobs we ceated, and make sure we can no longer query them by ID
+	for _, job := range insertedJobs {
+		err = jobRepo.DeleteJob(job.ID)
+		assert.NoError(err)
+		jobByID, err := jobRepo.GetJob(job.ID)
+		assert.NoError(err)
+		assert.Nil(jobByID)
+	}
+}
+
+func assertEqualJobs(t *testing.T, expectedJob *models.Job, actualJob *models.Job) {
+	assert := assert.New(t)
+	assert.Equal(expectedJob.ID, actualJob.ID)
+	assert.Equal(expectedJob.CreatedAt, actualJob.CreatedAt)
+	assert.Equal(expectedJob.UpdatedAt, actualJob.UpdatedAt)
+	assert.Equal(expectedJob.UpdatedAt, actualJob.UpdatedAt)
+	assert.Equal(expectedJob.CompletedAt, actualJob.CompletedAt)
+	assert.Equal(expectedJob.Status, actualJob.Status)
+	assert.Equal(expectedJob.Type, actualJob.Type)
+	assert.Equal(expectedJob.Owner, actualJob.Owner)
 }
 
 func printJobs(jobs []models.Job) {

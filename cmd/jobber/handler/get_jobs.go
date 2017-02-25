@@ -7,6 +7,7 @@ import (
 	"github.com/go-swagger/go-swagger/httpkit/middleware"
 	apimodel "github.com/ritchida/jobber/generated/jobber/models"
 	"github.com/ritchida/jobber/generated/jobber/restapi/operations/jobs"
+	"github.com/ritchida/jobber/pkg/models"
 	"github.com/ritchida/jobber/pkg/repository"
 )
 
@@ -22,14 +23,28 @@ func GetJobs(params jobs.GetJobsParams) middleware.Responder {
 		return jobs.NewGetJobsDefault(0).WithPayload(&se)
 	}
 
-	list, err := jobRepo.GetJobs()
-	if err != nil {
-		newErr := fmt.Errorf("Unable to get jobs: %v", err)
-		se := apimodel.Error{
-			Code:    http.StatusInternalServerError,
-			Message: fmt.Sprintf("%v", newErr),
+	var list []*models.Job
+	if params.NumLatest == nil {
+		list, err = jobRepo.GetJobs()
+		if err != nil {
+			newErr := fmt.Errorf("Unable to get jobs: %v", err)
+			se := apimodel.Error{
+				Code:    http.StatusInternalServerError,
+				Message: fmt.Sprintf("%v", newErr),
+			}
+			return jobs.NewGetJobsDefault(0).WithPayload(&se)
 		}
-		return jobs.NewGetJobsDefault(0).WithPayload(&se)
+	} else {
+
+		list, err = jobRepo.GetLatestJobs(int(*params.NumLatest))
+		if err != nil {
+			newErr := fmt.Errorf("Unable to get jobs: %v", err)
+			se := apimodel.Error{
+				Code:    http.StatusInternalServerError,
+				Message: fmt.Sprintf("%v", newErr),
+			}
+			return jobs.NewGetJobsDefault(0).WithPayload(&se)
+		}
 	}
 
 	apiJobs := []*apimodel.Job{}

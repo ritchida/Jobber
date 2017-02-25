@@ -45,10 +45,10 @@ type JobberAPI struct {
 	// TxtConsumer registers a consumer for a "text/plain" mime type
 	TxtConsumer httpkit.Consumer
 
-	// TxtProducer registers a producer for a "text/plain" mime type
-	TxtProducer httpkit.Producer
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer httpkit.Producer
+	// TxtProducer registers a producer for a "text/plain" mime type
+	TxtProducer httpkit.Producer
 
 	// JobCreateJobHandler sets the operation handler for the create job operation
 	JobCreateJobHandler job.CreateJobHandler
@@ -111,12 +111,12 @@ func (o *JobberAPI) Validate() error {
 		unregistered = append(unregistered, "TxtConsumer")
 	}
 
-	if o.TxtProducer == nil {
-		unregistered = append(unregistered, "TxtProducer")
-	}
-
 	if o.JSONProducer == nil {
 		unregistered = append(unregistered, "JSONProducer")
+	}
+
+	if o.TxtProducer == nil {
+		unregistered = append(unregistered, "TxtProducer")
 	}
 
 	if o.JobCreateJobHandler == nil {
@@ -176,11 +176,11 @@ func (o *JobberAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Produce
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "text/plain":
-			result["text/plain"] = o.TxtProducer
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
+
+		case "text/plain":
+			result["text/plain"] = o.TxtProducer
 
 		}
 	}

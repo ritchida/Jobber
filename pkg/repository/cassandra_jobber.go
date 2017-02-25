@@ -11,13 +11,15 @@ import (
 )
 
 const (
-	selectLatestJobsQuery = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM latest_jobs where bucket = ? LIMIT ?"
-	selectJobsQuery       = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs"
-	selectJobByIDQuery    = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs where job_id = ?"
-	insertJobQuery        = "INSERT INTO jobs                (job_id, created, last_updated, status, tags, type, owner) VALUES    (?, ?, ?, ?, ?, ?, ?)"
-	insertLatestJobQuery  = "INSERT INTO latest_jobs (bucket, job_id, created, last_updated, status, tags, type, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-	deleteJobQuery        = "DELETE FROM jobs        where                job_id = ?"
-	deleteLatestJobQuery  = "DELETE FROM latest_jobs where bucket = ? and job_id = ?"
+	selectLatestJobsQuery      = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM latest_jobs where bucket = ? LIMIT ?"
+	selectJobsQuery            = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs"
+	selectJobByIDQuery         = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs where job_id = ?"
+	insertJobQuery             = "INSERT INTO jobs                (job_id, created, last_updated, status, tags, type, owner) VALUES    (?, ?, ?, ?, ?, ?, ?)"
+	insertLatestJobQuery       = "INSERT INTO latest_jobs (bucket, job_id, created, last_updated, status, tags, type, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+	updateJobStatusQuery       = "UPDATE        jobs SET status = ?, last_updated = ? where                job_id = ?"
+	updateLatestJobStatusQuery = "UPDATE latest_jobs SET status = ?, last_updated = ? where bucket = ? and job_id = ?"
+	deleteJobQuery             = "DELETE FROM jobs        where                job_id = ?"
+	deleteLatestJobQuery       = "DELETE FROM latest_jobs where bucket = ? and job_id = ?"
 )
 
 var repository *CassandraJobberRepository
@@ -144,11 +146,23 @@ func (r CassandraJobberRepository) InsertJob(job *models.JobSpec) (string, error
 	batch := gocql.NewBatch(gocql.LoggedBatch)
 
 	timeUUID := gocql.TimeUUID()
-	timestamp := timeUUID.Timestamp()
-	batch.Query(insertJobQuery, timeUUID, timestamp, timestamp, "queued", job.Tags, job.Type, "danritchie")
-	batch.Query(insertLatestJobQuery, 0, timeUUID, timestamp, timestamp, "queued", job.Tags, job.Type, "danritchie")
+	time := timeUUID.Time()
+	batch.Query(insertJobQuery, timeUUID, time, time, "queued", job.Tags, job.Type, "danritchie")
+	batch.Query(insertLatestJobQuery, 0, timeUUID, time, time, "queued", job.Tags, job.Type, "danritchie")
 
 	return timeUUID.String(), r.session.ExecuteBatch(batch)
+}
+
+// UpdateJobStatus updates the specified job's status
+func (r CassandraJobberRepository) UpdateJobStatus(ID string, status string) error {
+	batch := gocql.NewBatch(gocql.LoggedBatch)
+
+	timeUUID := gocql.TimeUUID()
+	time := timeUUID.Time()
+	batch.Query(updateJobStatusQuery, status, time, ID)
+	batch.Query(updateLatestJobStatusQuery, status, time, 0, ID)
+
+	return r.session.ExecuteBatch(batch)
 }
 
 // DeleteJob removes the specified job from the job repository

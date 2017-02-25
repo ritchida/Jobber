@@ -16,10 +16,7 @@ func GetJobs(params jobs.GetJobsParams) middleware.Responder {
 	jobRepo, err := repository.GetCassandraJobberRepository()
 	if err != nil {
 		newErr := fmt.Errorf("Unable to access jobs repository: %v", err)
-		se := apimodel.Error{
-			Code:    http.StatusInternalServerError,
-			Message: fmt.Sprintf("%v", newErr),
-		}
+		se := createServiceError(newErr, http.StatusInternalServerError)
 		return jobs.NewGetJobsDefault(0).WithPayload(&se)
 	}
 
@@ -28,21 +25,14 @@ func GetJobs(params jobs.GetJobsParams) middleware.Responder {
 		list, err = jobRepo.GetJobs()
 		if err != nil {
 			newErr := fmt.Errorf("Unable to get jobs: %v", err)
-			se := apimodel.Error{
-				Code:    http.StatusInternalServerError,
-				Message: fmt.Sprintf("%v", newErr),
-			}
+			se := createServiceError(newErr, http.StatusInternalServerError)
 			return jobs.NewGetJobsDefault(0).WithPayload(&se)
 		}
 	} else {
-
 		list, err = jobRepo.GetLatestJobs(int(*params.NumLatest))
 		if err != nil {
 			newErr := fmt.Errorf("Unable to get jobs: %v", err)
-			se := apimodel.Error{
-				Code:    http.StatusInternalServerError,
-				Message: fmt.Sprintf("%v", newErr),
-			}
+			se := createServiceError(newErr, http.StatusInternalServerError)
 			return jobs.NewGetJobsDefault(0).WithPayload(&se)
 		}
 	}

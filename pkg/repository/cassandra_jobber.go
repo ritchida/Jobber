@@ -11,12 +11,13 @@ import (
 )
 
 const (
-	selectJobsQuery      = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs"
-	selectJobByIDQuery   = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs where job_id = ?"
-	insertJobQuery       = "INSERT INTO jobs                (job_id, created, last_updated, status, tags, type, owner) VALUES    (?, ?, ?, ?, ?, ?, ?)"
-	insertLatestJobQuery = "INSERT INTO latest_jobs (bucket, job_id, created, last_updated, status, tags, type, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-	deleteJobQuery       = "DELETE FROM jobs        where                job_id = ?"
-	deleteLatestJobQuery = "DELETE FROM latest_jobs where bucket = ? and job_id = ?"
+	selectLatestJobsQuery = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM latest_jobs where bucket = ? LIMIT ?"
+	selectJobsQuery       = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs"
+	selectJobByIDQuery    = "SELECT job_id, created, last_updated, completed, status, tags, type, owner FROM jobs where job_id = ?"
+	insertJobQuery        = "INSERT INTO jobs                (job_id, created, last_updated, status, tags, type, owner) VALUES    (?, ?, ?, ?, ?, ?, ?)"
+	insertLatestJobQuery  = "INSERT INTO latest_jobs (bucket, job_id, created, last_updated, status, tags, type, owner) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+	deleteJobQuery        = "DELETE FROM jobs        where                job_id = ?"
+	deleteLatestJobQuery  = "DELETE FROM latest_jobs where bucket = ? and job_id = ?"
 )
 
 var repository *CassandraJobberRepository
@@ -64,6 +65,31 @@ func (r CassandraJobberRepository) Close() {
 	r.session.Close()
 }
 
+// GetLatestJobs returns the "numJobs" most recently created jobs
+func (r CassandraJobberRepository) GetLatestJobs(numJobs int) ([]*models.Job, error) {
+	var completedAt time.Time
+	job := models.Job{}
+	jobs := []*models.Job{}
+	iter := r.session.Query(selectLatestJobsQuery, 0, numJobs).Iter()
+	for iter.Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &completedAt, &job.Status, &job.Tags, &job.Type, &job.Owner) {
+		newJob := models.Job{
+			ID:          job.ID,
+			CreatedAt:   job.CreatedAt,
+			UpdatedAt:   job.UpdatedAt,
+			CompletedAt: &completedAt,
+			Status:      job.Status,
+			Type:        job.Type,
+			Tags:        job.Tags,
+			Owner:       job.Owner,
+		}
+		jobs = append(jobs, &newJob)
+	}
+	if err := iter.Close(); err != nil {
+		return nil, err
+	}
+	return jobs, nil
+}
+
 // GetJobs returns all jobs
 func (r CassandraJobberRepository) GetJobs() ([]*models.Job, error) {
 	var completedAt time.Time
@@ -94,7 +120,7 @@ func (r CassandraJobberRepository) GetJob(ID string) (*models.Job, error) {
 	var completedAt time.Time
 	job := models.Job{}
 	var newJob *models.Job
-	iter := r.session.Query(selectJobsQuery).Iter()
+	iter := r.session.Query(selectJobByIDQuery, ID).Iter()
 	for iter.Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &completedAt, &job.Status, &job.Tags, &job.Type, &job.Owner) {
 		newJob = &models.Job{
 			ID:          job.ID,

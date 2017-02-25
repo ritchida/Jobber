@@ -4,8 +4,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
-
 	strfmt "github.com/go-swagger/go-swagger/strfmt"
 	"github.com/go-swagger/go-swagger/swag"
 
@@ -45,7 +43,7 @@ type Job struct {
 
 	Required: true
 	*/
-	Status string `json:"status"`
+	Status JobStatus `json:"status"`
 
 	/* tags
 	 */
@@ -136,31 +134,9 @@ func (m *Job) validateOwner(formats strfmt.Registry) error {
 	return nil
 }
 
-var jobTypeStatusPropEnum []interface{}
-
-func (m *Job) validateStatusEnum(path, location string, value string) error {
-	if jobTypeStatusPropEnum == nil {
-		var res []string
-		if err := json.Unmarshal([]byte(`["queued","running","success","failed","unknown"]`), &res); err != nil {
-			return err
-		}
-		for _, v := range res {
-			jobTypeStatusPropEnum = append(jobTypeStatusPropEnum, v)
-		}
-	}
-	if err := validate.Enum(path, location, value, jobTypeStatusPropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (m *Job) validateStatus(formats strfmt.Registry) error {
 
-	if err := validate.RequiredString("status", "body", string(m.Status)); err != nil {
-		return err
-	}
-
-	if err := m.validateStatusEnum("status", "body", m.Status); err != nil {
+	if err := m.Status.Validate(formats); err != nil {
 		return err
 	}
 

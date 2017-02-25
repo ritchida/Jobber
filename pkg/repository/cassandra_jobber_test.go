@@ -42,9 +42,8 @@ func TestJobLifecycle(t *testing.T) {
 		Type: "integration test",
 	}
 
-	insertedJobs := []*models.Job{}
-
 	// insert 3 jobs, and make sure we can query each by its ID
+	insertedJobs := []*models.Job{}
 	for count := 0; count < 3; count++ {
 		jobID, err = jobRepo.InsertJob(&jobSpec)
 		assert.NoError(err)
@@ -70,13 +69,24 @@ func TestJobLifecycle(t *testing.T) {
 		insertedJobs = append(insertedJobs, jobByID)
 	}
 
+	// update the status on all 3 jobs
+	updatedJobs := []*models.Job{}
+	for _, j := range insertedJobs {
+		jobRepo.UpdateJobStatus(j.ID, "running")
+		jobByID, err := jobRepo.GetJob(j.ID)
+		assert.NoError(err)
+		assert.Equal("running", jobByID.Status)
+		assert.NotEqual(j.UpdatedAt, jobByID.UpdatedAt)
+		updatedJobs = append(updatedJobs, jobByID)
+	}
+
 	// make sure we can get the latest jobs correctly
 	latestJobs, err := jobRepo.GetLatestJobs(2)
 	assert.NoError(err)
 	assert.NotEmpty(latestJobs)
 	assert.Equal(2, len(latestJobs))
-	assertEqualJobs(t, insertedJobs[2], latestJobs[0])
-	assertEqualJobs(t, insertedJobs[1], latestJobs[1])
+	assertEqualJobs(t, updatedJobs[2], latestJobs[0])
+	assertEqualJobs(t, updatedJobs[1], latestJobs[1])
 
 	// delete the jobs we ceated, and make sure we can no longer query them by ID
 	for _, job := range insertedJobs {

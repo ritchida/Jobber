@@ -25,7 +25,7 @@ func (t *Job) FromAPI(apiJob models.Job) {
 	t.CreatedAt = *DateTimeToTime(&apiJob.CreatedAt)
 	t.UpdatedAt = *DateTimeToTime(&apiJob.UpdatedAt)
 	t.CompletedAt = DateTimeToTime(apiJob.CompletedAt)
-	t.Status = apiJob.Status
+	t.Status = string(apiJob.Status)
 	t.Type = apiJob.Type
 	tags := []string{}
 	for _, tag := range apiJob.Tags {
@@ -46,7 +46,7 @@ func (t *Job) ToAPI() models.Job {
 		CreatedAt:   *TimeToDateTime(&t.CreatedAt),
 		UpdatedAt:   *TimeToDateTime(&t.UpdatedAt),
 		CompletedAt: TimeToDateTime(t.CompletedAt),
-		Status:      t.Status,
+		Status:      models.JobStatus(t.Status),
 		Type:        t.Type,
 		Tags:        tags,
 		Owner:       t.Owner,

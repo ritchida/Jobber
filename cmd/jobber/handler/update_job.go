@@ -9,22 +9,21 @@ import (
 	"github.com/ritchida/jobber/pkg/repository"
 )
 
-// GetJob returns a response with a Job payload where the Job ID is "params.ID".
-func GetJob(params job.GetJobParams) middleware.Responder {
+// UpdateJob will Update a new Job with the specified profile
+func UpdateJob(params job.UpdateJobParams) middleware.Responder {
 	jobRepo, err := repository.GetCassandraJobberRepository()
 	if err != nil {
 		newErr := fmt.Errorf("Unable to access jobs repository: %v", err)
 		se := createServiceError(newErr, http.StatusInternalServerError)
-		return job.NewGetJobDefault(0).WithPayload(&se)
+		return job.NewUpdateJobDefault(0).WithPayload(&se)
 	}
 
-	j, err := jobRepo.GetJob(params.ID)
+	err = jobRepo.UpdateJobStatus(params.ID, string(params.Status))
 	if err != nil {
-		newErr := fmt.Errorf("Unable to get job: %v", err)
+		newErr := fmt.Errorf("Unable to Update job: %v", err)
 		se := createServiceError(newErr, http.StatusInternalServerError)
-		return job.NewGetJobDefault(0).WithPayload(&se)
+		return job.NewUpdateJobDefault(0).WithPayload(&se)
 	}
 
-	apiJob := j.ToAPI()
-	return job.NewGetJobOK().WithPayload(&apiJob)
+	return job.NewUpdateJobAccepted()
 }

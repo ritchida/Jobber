@@ -40,22 +40,26 @@ type JobberAPI struct {
 	formats         strfmt.Registry
 	defaultConsumes string
 	defaultProduces string
-	// TxtConsumer registers a consumer for a "text/plain" mime type
-	TxtConsumer httpkit.Consumer
 	// JSONConsumer registers a consumer for a "application/json" mime type
 	JSONConsumer httpkit.Consumer
+	// TxtConsumer registers a consumer for a "text/plain" mime type
+	TxtConsumer httpkit.Consumer
 
 	// JSONProducer registers a producer for a "application/json" mime type
 	JSONProducer httpkit.Producer
 	// TxtProducer registers a producer for a "text/plain" mime type
 	TxtProducer httpkit.Producer
 
+	// JobAddJobMessageHandler sets the operation handler for the add job message operation
+	JobAddJobMessageHandler job.AddJobMessageHandler
 	// JobCreateJobHandler sets the operation handler for the create job operation
 	JobCreateJobHandler job.CreateJobHandler
 	// JobDeleteJobHandler sets the operation handler for the delete job operation
 	JobDeleteJobHandler job.DeleteJobHandler
 	// JobGetJobHandler sets the operation handler for the get job operation
 	JobGetJobHandler job.GetJobHandler
+	// JobGetJobMessagesHandler sets the operation handler for the get job messages operation
+	JobGetJobMessagesHandler job.GetJobMessagesHandler
 	// JobsGetJobsHandler sets the operation handler for the get jobs operation
 	JobsGetJobsHandler jobs.GetJobsHandler
 	// JobUpdateJobHandler sets the operation handler for the update job operation
@@ -107,12 +111,12 @@ func (o *JobberAPI) RegisterFormat(name string, format strfmt.Format, validator 
 func (o *JobberAPI) Validate() error {
 	var unregistered []string
 
-	if o.TxtConsumer == nil {
-		unregistered = append(unregistered, "TxtConsumer")
-	}
-
 	if o.JSONConsumer == nil {
 		unregistered = append(unregistered, "JSONConsumer")
+	}
+
+	if o.TxtConsumer == nil {
+		unregistered = append(unregistered, "TxtConsumer")
 	}
 
 	if o.JSONProducer == nil {
@@ -121,6 +125,10 @@ func (o *JobberAPI) Validate() error {
 
 	if o.TxtProducer == nil {
 		unregistered = append(unregistered, "TxtProducer")
+	}
+
+	if o.JobAddJobMessageHandler == nil {
+		unregistered = append(unregistered, "job.AddJobMessageHandler")
 	}
 
 	if o.JobCreateJobHandler == nil {
@@ -133,6 +141,10 @@ func (o *JobberAPI) Validate() error {
 
 	if o.JobGetJobHandler == nil {
 		unregistered = append(unregistered, "job.GetJobHandler")
+	}
+
+	if o.JobGetJobMessagesHandler == nil {
+		unregistered = append(unregistered, "job.GetJobMessagesHandler")
 	}
 
 	if o.JobsGetJobsHandler == nil {
@@ -169,11 +181,11 @@ func (o *JobberAPI) ConsumersFor(mediaTypes []string) map[string]httpkit.Consume
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "text/plain":
-			result["text/plain"] = o.TxtConsumer
-
 		case "application/json":
 			result["application/json"] = o.JSONConsumer
+
+		case "text/plain":
+			result["text/plain"] = o.TxtConsumer
 
 		}
 	}
@@ -225,6 +237,11 @@ func (o *JobberAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/v1/jobs/{id}/messages"] = job.NewAddJobMessage(o.context, o.JobAddJobMessageHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers[strings.ToUpper("POST")] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/v1/jobs"] = job.NewCreateJob(o.context, o.JobCreateJobHandler)
 
 	if o.handlers["DELETE"] == nil {
@@ -236,6 +253,11 @@ func (o *JobberAPI) initHandlerCache() {
 		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/jobs/{id}"] = job.NewGetJob(o.context, o.JobGetJobHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/v1/jobs/{id}/messages"] = job.NewGetJobMessages(o.context, o.JobGetJobMessagesHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)

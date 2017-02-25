@@ -23,14 +23,17 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.TxtConsumer = httpkit.TextConsumer()
-
 	api.JSONConsumer = httpkit.JSONConsumer()
+
+	api.TxtConsumer = httpkit.TextConsumer()
 
 	api.JSONProducer = httpkit.JSONProducer()
 
 	api.TxtProducer = httpkit.TextProducer()
 
+	api.JobAddJobMessageHandler = job.AddJobMessageHandlerFunc(func(params job.AddJobMessageParams) middleware.Responder {
+		return middleware.NotImplemented("operation job.AddJobMessage has not yet been implemented")
+	})
 	api.JobCreateJobHandler = job.CreateJobHandlerFunc(func(params job.CreateJobParams) middleware.Responder {
 		return middleware.NotImplemented("operation job.CreateJob has not yet been implemented")
 	})
@@ -39,6 +42,9 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 	})
 	api.JobGetJobHandler = job.GetJobHandlerFunc(func(params job.GetJobParams) middleware.Responder {
 		return middleware.NotImplemented("operation job.GetJob has not yet been implemented")
+	})
+	api.JobGetJobMessagesHandler = job.GetJobMessagesHandlerFunc(func(params job.GetJobMessagesParams) middleware.Responder {
+		return middleware.NotImplemented("operation job.GetJobMessages has not yet been implemented")
 	})
 	api.JobsGetJobsHandler = jobs.GetJobsHandlerFunc(func(params jobs.GetJobsParams) middleware.Responder {
 		return middleware.NotImplemented("operation jobs.GetJobs has not yet been implemented")

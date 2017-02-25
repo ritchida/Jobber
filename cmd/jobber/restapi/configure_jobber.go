@@ -32,11 +32,15 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 
 	api.TxtProducer = httpkit.TextProducer()
 
-	// Add handlers here
+	// Add single job handlers here
 	api.JobCreateJobHandler = job.CreateJobHandlerFunc(handler.CreateJob)
 	api.JobUpdateJobHandler = job.UpdateJobHandlerFunc(handler.UpdateJob)
 	api.JobDeleteJobHandler = job.DeleteJobHandlerFunc(handler.DeleteJob)
 	api.JobGetJobHandler = job.GetJobHandlerFunc(handler.GetJob)
+	api.JobAddJobMessageHandler = job.AddJobMessageHandlerFunc(handler.AddJobMessage)
+	api.JobGetJobMessagesHandler = job.GetJobMessagesHandlerFunc(handler.GetJobMessages)
+
+	// add multiple job handlers here
 	api.JobsGetJobsHandler = jobs.GetJobsHandlerFunc(handler.GetJobs)
 
 	api.ServerShutdown = func() {}

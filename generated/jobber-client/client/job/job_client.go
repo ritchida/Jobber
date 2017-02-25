@@ -23,6 +23,31 @@ type Client struct {
 }
 
 /*
+AddJobMessage add job message API
+*/
+func (a *Client) AddJobMessage(params *AddJobMessageParams) (*AddJobMessageAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewAddJobMessageParams()
+	}
+
+	result, err := a.transport.Submit(&client.Operation{
+		ID:                 "addJobMessage",
+		Method:             "POST",
+		PathPattern:        "/v1/jobs/{id}/messages",
+		ProducesMediaTypes: []string{"application/json", "text/plain"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &AddJobMessageReader{formats: a.formats},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*AddJobMessageAccepted), nil
+}
+
+/*
 CreateJob create job API
 */
 func (a *Client) CreateJob(params *CreateJobParams) (*CreateJobAccepted, error) {
@@ -95,6 +120,31 @@ func (a *Client) GetJob(params *GetJobParams) (*GetJobOK, error) {
 		return nil, err
 	}
 	return result.(*GetJobOK), nil
+}
+
+/*
+GetJobMessages get job messages API
+*/
+func (a *Client) GetJobMessages(params *GetJobMessagesParams) (*GetJobMessagesOK, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewGetJobMessagesParams()
+	}
+
+	result, err := a.transport.Submit(&client.Operation{
+		ID:                 "getJobMessages",
+		Method:             "GET",
+		PathPattern:        "/v1/jobs/{id}/messages",
+		ProducesMediaTypes: []string{"application/json", "text/plain"},
+		ConsumesMediaTypes: []string{"application/json", "text/plain"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetJobMessagesReader{formats: a.formats},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*GetJobMessagesOK), nil
 }
 
 /*

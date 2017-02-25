@@ -35,6 +35,7 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 	// Add handlers here
 	api.JobCreateJobHandler = job.CreateJobHandlerFunc(handler.CreateJob)
 	api.JobUpdateJobHandler = job.UpdateJobHandlerFunc(handler.UpdateJob)
+	api.JobDeleteJobHandler = job.DeleteJobHandlerFunc(handler.DeleteJob)
 	api.JobGetJobHandler = job.GetJobHandlerFunc(handler.GetJob)
 	api.JobsGetJobsHandler = jobs.GetJobsHandlerFunc(handler.GetJobs)
 

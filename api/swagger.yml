@@ -90,6 +90,17 @@ paths:
           description: error
           schema:
             $ref: "#/definitions/Error"
+    delete:
+     tags: ["job"]
+     description: "Deletes a job specified by ID"
+     operationId: deleteJob
+     responses:
+       '200':
+         description: OK
+       default:
+         description: error
+         schema:
+           $ref: "#/definitions/Error"
 definitions:
   Job:
     type: object

@@ -23,9 +23,9 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 
-	api.JSONConsumer = httpkit.JSONConsumer()
-
 	api.TxtConsumer = httpkit.TextConsumer()
+
+	api.JSONConsumer = httpkit.JSONConsumer()
 
 	api.JSONProducer = httpkit.JSONProducer()
 
@@ -33,6 +33,9 @@ func configureAPI(api *operations.JobberAPI) http.Handler {
 
 	api.JobCreateJobHandler = job.CreateJobHandlerFunc(func(params job.CreateJobParams) middleware.Responder {
 		return middleware.NotImplemented("operation job.CreateJob has not yet been implemented")
+	})
+	api.JobDeleteJobHandler = job.DeleteJobHandlerFunc(func(params job.DeleteJobParams) middleware.Responder {
+		return middleware.NotImplemented("operation job.DeleteJob has not yet been implemented")
 	})
 	api.JobGetJobHandler = job.GetJobHandlerFunc(func(params job.GetJobParams) middleware.Responder {
 		return middleware.NotImplemented("operation job.GetJob has not yet been implemented")

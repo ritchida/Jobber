@@ -72,6 +72,31 @@ func (a *Client) GetJob(params *GetJobParams) (*GetJobOK, error) {
 	return result.(*GetJobOK), nil
 }
 
+/*
+UpdateJob update job API
+*/
+func (a *Client) UpdateJob(params *UpdateJobParams) (*UpdateJobAccepted, error) {
+	// TODO: Validate the params before sending
+	if params == nil {
+		params = NewUpdateJobParams()
+	}
+
+	result, err := a.transport.Submit(&client.Operation{
+		ID:                 "updateJob",
+		Method:             "PATCH",
+		PathPattern:        "/v1/jobs/{id}",
+		ProducesMediaTypes: []string{"application/json", "text/plain"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &UpdateJobReader{formats: a.formats},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*UpdateJobAccepted), nil
+}
+
 // SetTransport changes the transport on the client
 func (a *Client) SetTransport(transport client.Transport) {
 	a.transport = transport

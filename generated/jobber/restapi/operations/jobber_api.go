@@ -45,10 +45,10 @@ type JobberAPI struct {
 	// TxtConsumer registers a consumer for a "text/plain" mime type
 	TxtConsumer httpkit.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
-	JSONProducer httpkit.Producer
 	// TxtProducer registers a producer for a "text/plain" mime type
 	TxtProducer httpkit.Producer
+	// JSONProducer registers a producer for a "application/json" mime type
+	JSONProducer httpkit.Producer
 
 	// JobCreateJobHandler sets the operation handler for the create job operation
 	JobCreateJobHandler job.CreateJobHandler
@@ -56,6 +56,8 @@ type JobberAPI struct {
 	JobGetJobHandler job.GetJobHandler
 	// JobsGetJobsHandler sets the operation handler for the get jobs operation
 	JobsGetJobsHandler jobs.GetJobsHandler
+	// JobUpdateJobHandler sets the operation handler for the update job operation
+	JobUpdateJobHandler job.UpdateJobHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -111,12 +113,12 @@ func (o *JobberAPI) Validate() error {
 		unregistered = append(unregistered, "TxtConsumer")
 	}
 
-	if o.JSONProducer == nil {
-		unregistered = append(unregistered, "JSONProducer")
-	}
-
 	if o.TxtProducer == nil {
 		unregistered = append(unregistered, "TxtProducer")
+	}
+
+	if o.JSONProducer == nil {
+		unregistered = append(unregistered, "JSONProducer")
 	}
 
 	if o.JobCreateJobHandler == nil {
@@ -129,6 +131,10 @@ func (o *JobberAPI) Validate() error {
 
 	if o.JobsGetJobsHandler == nil {
 		unregistered = append(unregistered, "jobs.GetJobsHandler")
+	}
+
+	if o.JobUpdateJobHandler == nil {
+		unregistered = append(unregistered, "job.UpdateJobHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -176,11 +182,11 @@ func (o *JobberAPI) ProducersFor(mediaTypes []string) map[string]httpkit.Produce
 	for _, mt := range mediaTypes {
 		switch mt {
 
-		case "application/json":
-			result["application/json"] = o.JSONProducer
-
 		case "text/plain":
 			result["text/plain"] = o.TxtProducer
+
+		case "application/json":
+			result["application/json"] = o.JSONProducer
 
 		}
 	}
@@ -224,6 +230,11 @@ func (o *JobberAPI) initHandlerCache() {
 		o.handlers[strings.ToUpper("GET")] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/v1/jobs"] = jobs.NewGetJobs(o.context, o.JobsGetJobsHandler)
+
+	if o.handlers["PATCH"] == nil {
+		o.handlers[strings.ToUpper("PATCH")] = make(map[string]http.Handler)
+	}
+	o.handlers["PATCH"]["/v1/jobs/{id}"] = job.NewUpdateJob(o.context, o.JobUpdateJobHandler)
 
 }
 

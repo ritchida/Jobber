@@ -71,6 +71,25 @@ paths:
          description: error
          schema:
            $ref: "#/definitions/Error"
+    patch:
+      tags: ["job"]
+      operationId: updateJob
+      consumes:
+      - application/json
+      parameters:
+      - name: "status"
+        description: "Updates an existing service instance"
+        required: false
+        in: body
+        schema:
+          $ref: "#/definitions/JobStatus"
+      responses:
+        '202':
+          description: Accepted
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/Error"
 definitions:
   Job:
     type: object
@@ -98,18 +117,20 @@ definitions:
       type:
         type: string
       status:
-        type: string
-        enum:
-        - queued
-        - running
-        - success
-        - failed
-        - unknown
+        $ref: "#/definitions/JobStatus"
       tags:
         type: array
         items:
           $ref: "#/definitions/Tag"
           description: Allows jobs to be tagged with user-defined strings for customizable search.
+  JobStatus:
+    type: string
+    enum:
+    - queued
+    - running
+    - success
+    - failed
+    - unknown
   JobSpec:
     type: object
     required:

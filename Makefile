@@ -10,3 +10,13 @@ generate: generated/jobber generated/jobber-client
 
 clean:
 	rm -rf generated
+
+test-repo:
+	go test github.com/ritchida/jobber/pkg/repository
+
+test-api:
+	./recipes/start-web-svc.sh
+	go test github.com/ritchida/jobber/pkg/repository
+	./recipes/stop-web-svc.sh
+
+test: test-repo test-api

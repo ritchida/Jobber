@@ -2,9 +2,12 @@
 
 Jobber is a Cassandra-backed job reporting service written in Go.
 
-## Requirements
+## Jobber wiki
 
-(https://github.com/ritchida/Jobber/wiki/Jobber-Requirements)
+Refer to the following Wiki pages for more detailed Jobber discussion:
+
+* Requirements: https://github.com/ritchida/Jobber/wiki/Jobber-Requirements
+* Database Design: https://github.com/ritchida/Jobber/wiki/Database-Design
 
 ## Development
 

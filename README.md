@@ -27,30 +27,37 @@ go get go get -u github.com/go-swagger/go-swagger/cmd/swagger
 
 Jobber uses a Cassandra database to store information on jobs.  To setup a VM to run Cassandra (for example, in AWS):
 
-1. Sign into AWS
-2. Launch an instance
+#### Create an Instance in AWS
+
+Sign into AWS and launch an instance as follows:
 * Ubuntu 16.04
 * Free tier (t2.micro) is fine
 * Auto-assign public IP
 * Add a 30 GB hard drive
 * Add a security group rull to allow ingress for TCP on port 9042
 * Specify an SSH keypair that will give you access to the instance
-3. When the instance is launched, install Cassandra: (http://www.itzgeek.com/how-tos/linux/ubuntu-how-tos/install-cassandra-on-ubuntu-16-04-and-run-a-single-node-cassandra-cluster-on-ubuntu.html)
-4. Configure Cassandra to accept connections from other servers:
-* Edit the file /etc/cassandra/cassandra.yaml
+
+#### Install and Configure Cassandra
+
+When the instance is launched, SSH into using the keypair specified during launch, and install Cassandra following these instructions for Ubuntu 16.04: 
+
+(http://www.itzgeek.com/how-tos/linux/ubuntu-how-tos/install-cassandra-on-ubuntu-16-04-and-run-a-single-node-cassandra-cluster-on-ubuntu.html)
+
+To configure Cassandra to accept connections from other servers, edit the file /etc/cassandra/cassandra.yaml:
+
 * Set the listen_address to the private ip of the Cassandra host
 * Set the broadcast_address to the private ip of the Cassandra host
 * Set the rpc_address to the private ip of the Cassandra host
 * Set the seeds to the private ip of the Cassandra host
-5. Restart the Cassandra service:
+* Restart the Cassandra service:
 ```bash
 sudo service cassandra Restart
 ```
-6. Check the service status and make sure it is running:
+* Check the service status and make sure it is running:
 ```bash
 sudo service cassandra status
 ```
-7. Make sure the Cassandra host is listening on port 9042:
+* Make sure the Cassandra host is listening on port 9042:
 ```bash
 netstat -tulpn
 ```
@@ -59,7 +66,7 @@ Look for something like:
 tcp        0      0 <cassandra server ip>:9042      0.0.0.0:*               LISTEN      -
 ```
 in the response.
-8. Go back to your development machine, and make sure you can see port 9042 on the Cassandra machine:
+* Go back to your development machine, and make sure you can see port 9042 on the Cassandra machine:
 ```bash
 Dans-MacBook-Pro:~ danritchie$ nc -v <public ip of cassandra host> 9042
 found 0 associations

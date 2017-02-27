@@ -1,0 +1,118 @@
+joba_by_id Table:
+2,000,000,000 values logical limit
+
+Values = numRows x (numCols - numPkeys - numStaticCols) + numStaticCols
+Values = numRows x (8 - 1 - 0) + 0
+Values = numRows x 7
+
+numRows?
+At 1 job per second on avg
+numRows/day = 60 x 60 x 24 = 86,400
+
+numValues/day = 604,800
+numValues/year = 220,752,000
+
+numYears = 2,000,000,000 / 220,752,000   = 9.06
+
+we should be good (figure out some sort of purging mechanism, ie, every month or year?)
+
+~3 MB reasonable partition physical size limit
+
+assuming:
+avg status size 10 chars
+avg type size 50 chars
+avg tag size 10 chars, 3 tags
+avg owner size 10 chars
+
+(sizeof of partition keys) + (sizeof static columns) + numRows((sizeof cell keys) + (sizeof cell values)) + 8(numValues)
+(16) + (0) + numRows(16 + sizeof 3 timestamps + sizeof status + sizeof type + sizeof tags + sizeof owner) + 8(numValues)
+(16)       + numRows(16 + 8 + 8 + 8 + 20 + 100 + 60 + 20) + 8(7 x 1 row)
+16 + (1 row)(240) + 56
+72 + 240
+= 312  
+
+with the job_id as partition key, one row per partition, which give roughly 312 bytes on avg (very small partition)
+
+
+
+latest_jobs table:
+
+single job per partition forces cross-partition query across MANY partitions to order by timeuuid
+group together in buckets (of ? size) to facilitate ordering
+
+Values = numRows x (numCols - numPkeys - numStaticCols) + numStaticCols
+Values = numRows x (9 - 2 - 0) + 0
+Values = numRows x 7 
+same # values as jobs_by_id table
+
+numRows?
+same # rows as jobs_by_id table
+
+~3 MB reasonable partition physical size limit
+
+assuming:
+avg status size 10 chars
+avg type size 50 chars
+avg tag size 10 chars, 3 tags
+avg owner size 10 chars
+
+(sizeof of partition keys) + (sizeof static columns) + numRows((sizeof cell keys) + (sizeof cell values)) + 8(numValues)
+(4) + (0) + numRows(20 + sizeof 3 timestamps + sizeof status + sizeof type + sizeof tags + sizeof owner) + numRows(8)
+(16)       + numRows((20 + 8 + 8 + 8 + 20 + 100 + 60 + 20) + (8))
+16 + numRows(244) + numRows(8)
+16 + numRows(252)   
+
+if numRows/day = 86,400
+16 + 21,772,800 bytes/day
+16 + 7,947,072,000 bytes/year
+
+7,947,072,016 bytes / 300,000,000 bytes per partition = ~26.5 buckets per year
+
+86,400 jobs per day * 365 = 31,536,000 jobs per year
+31,536,000 jobs per year / 26.5 buckets per year = 1,190,037 jobs per bucket
+
+rounding to 1,000,000 jobs per bucket gives a partition size of 252,000,016 bytes.
+
+
+
+5,676,480,000 / 20 buckets = 283,824,000 bytes per year (fine for cassandra 2.1 or higher)
+x 20 years = 400 buckets
+
+
+
+job_messages_by_job_id table:
+
+2,000,000,000 values logical limit
+
+Values = numRows x (numCols - numPkeys - numStaticCols) + numStaticCols
+Values = numRows x (3 - 2 - 0) + 0
+Values = numRows x 1 = numRows
+
+numRows?
+At 1 job per second on avg
+numRows/day = 60 x 60 x 24 = 86,400
+
+numValues/day = 604,800
+numValues/year = 220,752,000
+
+numYears = 2,000,000,000 / 220,752,000   = 9.06
+
+we should be good (figure out some sort of purging mechanism, ie, every month or year?)
+
+~3 MB reasonable partition physical size limit
+
+assuming:
+avg message size 50 chars
+
+(sizeof of partition keys) + (sizeof static columns) + numRows((sizeof cell keys) + (sizeof cell values)) + 8(numValues)
+(24) + (0) + numRows(24 + 100) + 8(numValues)
+(24)       + numRows(124) + 8(numRows)
+24 + numRows(132)
+
+Assuming the avg job has 10 messages, that would give:
+
+24 + 1320 = 1344
+
+with the job_id, message_created timestamp as partition key, 10 rows per partition on avg, which give roughly 1320 bytes on avg (very small partition)
+
+

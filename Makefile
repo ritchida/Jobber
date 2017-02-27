@@ -8,8 +8,10 @@ generated/jobber-client: api/swagger.yml
 
 generate: generated/jobber generated/jobber-client 
 
-clean:
+clean-generated:
 	rm -rf generated
+
+clean: clean-generated
 
 test-repo:
 	go test github.com/ritchida/jobber/pkg/repository

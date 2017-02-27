@@ -1,6 +1,8 @@
+create keyspace if not exists jobber with replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
+
 use jobber;
 
-create table jobs
+create table if not exists jobs
 (
     job_id timeuuid primary key,
     created timestamp,
@@ -12,7 +14,7 @@ create table jobs
     owner text
 );
 
-create table latest_jobs
+create table if not exists latest_jobs
 (
     bucket int,
     job_id timeuuid,
@@ -26,7 +28,7 @@ create table latest_jobs
     primary key ((bucket), job_id)
 ) with clustering order by (job_id desc);
 
-create table job_messages_by_job_id
+create table if not exists job_messages_by_job_id
 (
     job_id timeuuid,
     message_created timestamp,

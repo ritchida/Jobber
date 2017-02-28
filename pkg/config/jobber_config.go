@@ -23,6 +23,8 @@ type JobberConfig struct {
 // to interact with a Cassandra cluster
 type CassandraConfig struct {
 	ClusterNodeIPs string
+	JobberUser     string
+	JobberPassword string
 }
 
 var jobberConfig JobberConfig
@@ -70,6 +72,10 @@ func getCassandraEnvConfig() CassandraConfig {
 		switch parts[0] {
 		case "CASSANDRA_CLUSTER_IPS":
 			config.ClusterNodeIPs = parts[1]
+		case "CASSANDRA_JOBBER_USER":
+			config.JobberUser = parts[1]
+		case "CASSANDRA_JOBBER_PASSWORD":
+			config.JobberPassword = parts[1]
 		default:
 		}
 	}

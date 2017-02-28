@@ -18,7 +18,7 @@ test-repo:
 
 test-api:
 	./recipes/start-web-svc.sh
-	go test github.com/ritchida/jobber/pkg/repository
+	go test github.com/ritchida/jobber/cmd/jobber/restapi
 	./recipes/stop-web-svc.sh
 
 test: test-repo test-api

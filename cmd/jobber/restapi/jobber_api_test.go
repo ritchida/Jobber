@@ -25,8 +25,8 @@ func TestJobLifecycle(t *testing.T) {
 
 	assert := assert.New(t)
 
-	jobClient := jobclient.New(httptransport.New("localhost", "/", []string{"http"}), strfmt.Default)
-	jobsClient := jobsclient.New(httptransport.New("localhost", "/", []string{"http"}), strfmt.Default)
+	jobClient := jobclient.New(httptransport.New("localhost:9090", "/", []string{"http"}), strfmt.Default)
+	jobsClient := jobsclient.New(httptransport.New("localhost:9090", "/", []string{"http"}), strfmt.Default)
 
 	jobSpec := models.JobSpec{
 		Type: "integration test",
@@ -71,7 +71,7 @@ func TestJobLifecycle(t *testing.T) {
 		jobOK, err := jobClient.GetJob(jobclient.NewGetJobParams().WithID(string(j.ID)))
 		assert.NoError(err)
 		assert.NotNil(jobOK.Payload)
-		assert.Equal("running", jobOK.Payload.Status)
+		assert.Equal("running", string(jobOK.Payload.Status))
 		assert.NotEqual(j.UpdatedAt, jobOK.Payload.UpdatedAt)
 		updatedJobs = append(updatedJobs, jobOK.Payload)
 	}
@@ -101,7 +101,7 @@ func TestJobLifecycle(t *testing.T) {
 	for _, j := range updatedJobs {
 		params := jobclient.UpdateJobParams{
 			ID:     string(j.ID),
-			Status: "completed",
+			Status: "succeeded",
 		}
 		accepted, err := jobClient.UpdateJob(&params)
 		assert.NoError(err)
@@ -109,10 +109,10 @@ func TestJobLifecycle(t *testing.T) {
 		jobOK, err := jobClient.GetJob(jobclient.NewGetJobParams().WithID(string(j.ID)))
 		assert.NoError(err)
 		assert.NotNil(jobOK.Payload)
-		assert.Equal("completed", jobOK.Payload.Status)
+		assert.Equal("succeeded", string(jobOK.Payload.Status))
 		assert.NotEqual(j.UpdatedAt, jobOK.Payload.UpdatedAt)
 		assert.NotEqual(j.CompletedAt, jobOK.Payload.CompletedAt)
-		assert.Equal(jobOK.Payload.UpdatedAt, jobOK.Payload.CompletedAt)
+		assert.Equal(jobOK.Payload.UpdatedAt, *jobOK.Payload.CompletedAt)
 		completedJobs = append(completedJobs, jobOK.Payload)
 	}
 
@@ -130,9 +130,8 @@ func TestJobLifecycle(t *testing.T) {
 		deleteJobOK, err := jobClient.DeleteJob(jobclient.NewDeleteJobParams().WithID(string(j.ID)))
 		assert.NoError(err)
 		assert.NotNil(deleteJobOK)
-		jobOK, err := jobClient.GetJob(jobclient.NewGetJobParams().WithID(string(j.ID)))
-		assert.NoError(err)
-		assert.NotNil(jobOK.Payload)
+		_, err = jobClient.GetJob(jobclient.NewGetJobParams().WithID(string(j.ID)))
+		assert.Error(err)
 	}
 }
 

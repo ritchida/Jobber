@@ -62,6 +62,10 @@ func initRepo() {
 	repo.cluster = gocql.NewCluster(jobberConfig.Cassandra.ClusterNodeIPs)
 	repo.cluster.Keyspace = "jobber"
 	repo.cluster.Consistency = gocql.Quorum
+	repo.cluster.Authenticator = gocql.PasswordAuthenticator{
+		Username: jobberConfig.Cassandra.JobberUser,
+		Password: jobberConfig.Cassandra.JobberPassword,
+	}
 
 	// connect to the database
 	repo.session, repoInitErr = repo.cluster.CreateSession()

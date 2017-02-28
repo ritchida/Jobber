@@ -100,6 +100,8 @@ found 1 connections:
 Connection to 35.163.18.1 port 9042 [tcp/*] succeeded!
 ```
 
+Refer to the following link to setup password authentication in Cassandra: https://docs.datastax.com/en/cassandra/3.0/cassandra/configuration/secureConfigNativeAuth.html
+
 #### Install the Jobber Keyspace
 
 Copy the file pkg/repository/scripts/install_jobber.cql to the Cassandra server.
@@ -142,9 +144,11 @@ export JOBBER_PORT=<port number of jobber server>
 ```
 
 To run the integration tests you must have an instance of Cassandra running and publicly-accessible.
-Once you have an instance/cluster running, set the CASSANDRA_CLUSTER_IPS environment variable:
+Once you have an instance/cluster running, configure the Jobber environment variables to connect to Cassandra as follows:
 ```bash
 export CASSANDRA_CLUSTER_IPS=<public ip of cassandra node>
+export CASSANDRA_JOBBER_USER=<cassandra user>
+export CASSANDRA_JOBBER_PASSWORD=<cassandra password>
 ```
 Then you can run all of the existing Cassandra integration tests (Database and API):
 ```bash

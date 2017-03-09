@@ -28,7 +28,7 @@ Jobber depends on two go packages, gocql and go-swagger:
 
 ```bash
 go get github.com/gocql/gocql
-go get go get -u github.com/go-swagger/go-swagger/cmd/swagger
+go get -u github.com/go-swagger/go-swagger/cmd/swagger
 ```
 
 ### Database server
